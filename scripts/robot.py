@@ -25,7 +25,18 @@ def callback2(data):
 
 def go_to(goalx, goaly):
     robotAngle = math.asin(theta)
-    angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
+    dy,dx = (goaly - y), (goalx- x)
+    slop = dy/dx
+
+    if dx<0 and dy>0:
+        goalAngle = math.pi + math.atan(slop)
+    elif dx<0 and dy<0:
+        goalAngle = math.atan(slop) - math.pi
+    else:
+        goalAngle = math.atan(slop)
+
+    angleDiff = goalAngle - 2*robotAngle
+    # angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
     linear = math.sqrt((goalx - x)**2 + (goaly - y)**2)
     if abs(angleDiff) > 0.01:
         angular_vel = 1.5*angleDiff
