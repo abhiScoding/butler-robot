@@ -23,6 +23,22 @@ def callback2(data):
     # print(message)
     return 0
 
+def go_to(goalx, goaly):
+    robotAngle = math.asin(theta)
+    angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
+    linear = math.sqrt((goalx - x)**2 + (goaly - y)**2)
+    if abs(angleDiff) > 0.01:
+        angular_vel = 1.5*angleDiff
+        linear_vel = 0
+    else:
+        angular_vel = 0
+
+        if abs(linear) > 0.05:
+            linear_vel = 0.5*linear
+        else:
+            linear_vel = 0
+    return linear_vel, angular_vel
+
 
 def robot():
     rospy.init_node('robot')
@@ -36,22 +52,17 @@ def robot():
  
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
-        robotAngle = math.asin(theta)
-        angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
-        linear = math.sqrt((goalx - x)**2 + (goaly - y)**2)
         if message.lower() == 'order':
-            if abs(angleDiff) > 0.01:
-                vel.angular.z = 1.5*angleDiff
-                vel.linear.x = 0
-            else:
-                vel.angular.z = 0
+            linear_vel, angular_vel = go_to(goalx, goaly)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
+        # if message.lower() == 't1':
+        #     linear_vel, angular_vel = go_to(3, 3)
+        #     vel.linear.x = linear_vel
+        #     vel.angular.z = angular_vel
 
-                if abs(linear) > 0.05:
-                    vel.linear.x = 0.5*linear
-                else:
-                    vel.linear.x = 0
-      
-        print(vel.linear.x, vel.angular.z)
+
+        print(round(vel.linear.x, 2), round(vel.angular.z, 2))
         pub.publish(vel)
         rate.sleep()
 
