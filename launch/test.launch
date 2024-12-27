@@ -1,0 +1,7 @@
+<launch>
+	<node name="stage" pkg="stage_ros" type="stageros"
+	      args="$(find test)/world/playground.world" />
+
+	<node name="robot" pkg="test" type="robot.py" output="screen" />
+
+</launch>
