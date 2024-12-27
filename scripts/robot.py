@@ -64,11 +64,11 @@ def robot():
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
         if message.lower() == 'order':
-            linear_vel, angular_vel = go_to(4.95, -5.66)
+            linear_vel, angular_vel = go_to(0.09, -3.00)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
         if message.lower() == 'home':
-            linear_vel, angular_vel = go_to(0, 0)
+            linear_vel, angular_vel = go_to(0.5, -5.85)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
         if message.lower() == 't1':
@@ -80,7 +80,7 @@ def robot():
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
         if message.lower() == 't3':
-            linear_vel, angular_vel = go_to(0.24, -5.29)
+            linear_vel, angular_vel = go_to(4.95, -5.66)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
 
