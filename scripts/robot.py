@@ -33,28 +33,27 @@ def robot():
     rospy. sleep(1)
     rate = rospy.Rate(10)
     goalx, goaly = 3, -3
-    robotAngle = math.asin(theta)
-    angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
-    linear = 0.5*math.sqrt((goalx - x)**2 + (goaly - y)**2)
+ 
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
+        robotAngle = math.asin(theta)
+        angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
+        linear = math.sqrt((goalx - x)**2 + (goaly - y)**2)
         if message.lower() == 'order':
-            while abs(angleDiff) > 0.03:
-                robotAngle = math.asin(theta)
-                angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
+            if abs(angleDiff) > 0.01:
                 vel.angular.z = 1.5*angleDiff
-                pub.publish(vel)
-            vel.angular.z = 0
+                vel.linear.x = 0
+            else:
+                vel.angular.z = 0
 
-            while abs(linear) > 0.05:
-
-                linear = 0.5*math.sqrt((goalx - x)**2 + (goaly - y)**2)
-                vel.linear.x = linear
-                pub.publish(vel)
-            vel.linear.x = 0
-            # print(vel.linear.x, vel.angular.z)
-            pub.publish(vel)
-            rate.sleep()
+                if abs(linear) > 0.05:
+                    vel.linear.x = 0.5*linear
+                else:
+                    vel.linear.x = 0
+      
+        print(vel.linear.x, vel.angular.z)
+        pub.publish(vel)
+        rate.sleep()
 
 
 if __name__ == '__main__':
