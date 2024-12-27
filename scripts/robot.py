@@ -59,19 +59,30 @@ def robot():
 
     rospy. sleep(1)
     rate = rospy.Rate(10)
-    goalx, goaly = 3, -3
+    # goalx, goaly = 3, -3
  
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
         if message.lower() == 'order':
-            linear_vel, angular_vel = go_to(goalx, goaly)
+            linear_vel, angular_vel = go_to(4.95, -5.66)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        if message.lower() == 't1':
+        if message.lower() == 'home':
             linear_vel, angular_vel = go_to(0, 0)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-
+        if message.lower() == 't1':
+            linear_vel, angular_vel = go_to(3, 3)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
+        if message.lower() == 't2':
+            linear_vel, angular_vel = go_to(5.1, 0.48)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
+        if message.lower() == 't3':
+            linear_vel, angular_vel = go_to(0.24, -5.29)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
 
         print(round(vel.linear.x, 2), round(vel.angular.z, 2))
         pub.publish(vel)
