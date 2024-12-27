@@ -67,10 +67,10 @@ def robot():
             linear_vel, angular_vel = go_to(goalx, goaly)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        # if message.lower() == 't1':
-        #     linear_vel, angular_vel = go_to(3, 3)
-        #     vel.linear.x = linear_vel
-        #     vel.angular.z = angular_vel
+        if message.lower() == 't1':
+            linear_vel, angular_vel = go_to(0, 0)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
 
 
         print(round(vel.linear.x, 2), round(vel.angular.z, 2))
