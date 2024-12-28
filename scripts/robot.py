@@ -13,6 +13,7 @@ at_table1 = False
 at_table2 = False
 at_table3 = False
 
+# callback function for odometry message to get robot pose
 def callback1(odom):
     global x, y, theta
     x = odom.pose.pose.position.x
@@ -20,11 +21,13 @@ def callback1(odom):
     theta = odom.pose.pose.orientation.z
     return 0
 
+# callback function to receive string message for the food order 
 def callback2(data):
     global message
     message = data.data.lower()
     return 0
 
+# this function moves the robot to given coordinates in the map
 def go_to(goalx, goaly):
     global at_kitchen, at_table1, at_table2, at_table3
     robotAngle = math.asin(theta)
@@ -71,23 +74,41 @@ def robot():
     rate = rospy.Rate(10)
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
+        # moves robot to kitchen
         if 'order' in message and not at_kitchen:
             linear_vel, angular_vel = go_to(0.09, -3.00)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
+
+        # moves robot to table 1
         if 't1' in message and at_kitchen:
             linear_vel, angular_vel = go_to(3, 3)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
+
+        # moves robot to table 2
         if 't2' in message and (('t1' in message and at_table1) or ('t1' not in message and at_kitchen)):
             linear_vel, angular_vel = go_to(5.1, 0.48)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        if 't3' in message and (('t1' not in message and 't2' not in message and at_kitchen)or('t1' in message and 't2' in message and at_table2)or('t1' in message and 't2' not in message and at_table1)or('t1' not in message and 't2' in message and at_table2)):
+
+        # moves robot to table 3
+        if 't3' in message and (('t1' not in message and 't2' not in message and at_kitchen)
+                or('t1' in message and 't2' in message and at_table2)
+                or('t1' in message and 't2' not in message and at_table1)
+                or('t1' not in message and 't2' in message and at_table2)):
             linear_vel, angular_vel = go_to(4.95, -5.66)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        if 'home' in message and (('t1' in message and 't2' not in message and 't3' not in message and at_table1) or ('t1' not in message and 't2' in message and 't3' not in message and at_table2) or ('t1' not in message and 't2' not in message and 't3' in message and at_table3) or ('t1' in message and 't2' in message and 't3' not in message and at_table2) or ('t1' in message and 't2' not in message and 't3' in message and at_table3) or ('t1' not in message and 't2' in message and 't3' in message and at_table3) or ('t1' in message and 't2' in message and 't3' in message and at_table3)):
+
+        # moves robot to home position
+        if 'home' in message and (('t1' in message and 't2' not in message and 't3' not in message and at_table1) 
+                or ('t1' not in message and 't2' in message and 't3' not in message and at_table2) 
+                or ('t1' not in message and 't2' not in message and 't3' in message and at_table3) 
+                or ('t1' in message and 't2' in message and 't3' not in message and at_table2) 
+                or ('t1' in message and 't2' not in message and 't3' in message and at_table3) 
+                or ('t1' not in message and 't2' in message and 't3' in message and at_table3) 
+                or ('t1' in message and 't2' in message and 't3' in message and at_table3)):
             linear_vel, angular_vel = go_to(0.5, -5.85)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
