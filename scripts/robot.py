@@ -11,23 +11,22 @@ message = ""
 at_kitchen = False
 at_table1 = False
 at_table2 = False
+at_table3 = False
 
 def callback1(odom):
     global x, y, theta
     x = odom.pose.pose.position.x
     y = odom.pose.pose.position.y
     theta = odom.pose.pose.orientation.z
-    # print(round(x, 2), round(y, 2))
     return 0
 
 def callback2(data):
     global message
     message = data.data.lower()
-    # print(message)
     return 0
 
 def go_to(goalx, goaly):
-    global at_kitchen, at_table1, at_table2
+    global at_kitchen, at_table1, at_table2, at_table3
     robotAngle = math.asin(theta)
     dy,dx = (goaly - y), (goalx- x)
     slop = dy/dx
@@ -40,7 +39,6 @@ def go_to(goalx, goaly):
         goalAngle = math.atan(slop)
 
     angleDiff = goalAngle - 2*robotAngle
-    # angleDiff = math.atan((goaly - y) / (goalx- x)) - 2*robotAngle
     linear = math.sqrt((goalx - x)**2 + (goaly - y)**2)
     if abs(angleDiff) > 0.01:
         angular_vel = 1.5*angleDiff
@@ -56,9 +54,10 @@ def go_to(goalx, goaly):
                 at_kitchen = True
             if (goalx, goaly) == (3, 3):
                 at_table1 = True
-                # at_kitchen = False
             if (goalx, goaly) == (5.1, 0.48):
                 at_table2 = True
+            if (goalx, goaly) == (4.95, -5.66):
+                at_table3 = True
     return linear_vel, angular_vel
 
 
@@ -70,8 +69,6 @@ def robot():
 
     rospy. sleep(1)
     rate = rospy.Rate(10)
-    # goalx, goaly = 3, -3
- 
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
         if 'order' in message and not at_kitchen:
@@ -86,16 +83,15 @@ def robot():
             linear_vel, angular_vel = go_to(5.1, 0.48)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        # if message.lower() == 't3':
-        #     linear_vel, angular_vel = go_to(4.95, -5.66)
-        #     vel.linear.x = linear_vel
-        #     vel.angular.z = angular_vel
-        if 'home' in message and (('t1' in message and 't2' not in message and at_table1) or ('t2' in message and 't1' not in message and at_table2) or (('t1' in message and 't2' in message and at_table2))):
+        if 't3' in message and (('t1' not in message and 't2' not in message and at_kitchen)or('t1' in message and 't2' in message and at_table2)or('t1' in message and 't2' not in message and at_table1)or('t1' not in message and 't2' in message and at_table2)):
+            linear_vel, angular_vel = go_to(4.95, -5.66)
+            vel.linear.x = linear_vel
+            vel.angular.z = angular_vel
+        if 'home' in message and (('t1' in message and 't2' not in message and 't3' not in message and at_table1) or ('t1' not in message and 't2' in message and 't3' not in message and at_table2) or ('t1' not in message and 't2' not in message and 't3' in message and at_table3) or ('t1' in message and 't2' in message and 't3' not in message and at_table2) or ('t1' in message and 't2' not in message and 't3' in message and at_table3) or ('t1' not in message and 't2' in message and 't3' in message and at_table3) or ('t1' in message and 't2' in message and 't3' in message and at_table3)):
             linear_vel, angular_vel = go_to(0.5, -5.85)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
 
-        # print(round(vel.linear.x, 2), round(vel.angular.z, 2))
         pub.publish(vel)
         rate.sleep()
 
