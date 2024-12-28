@@ -8,6 +8,8 @@ import math
 
 vel = Twist()
 message = ""
+at_kitchen = False
+at_table = False
 
 def callback1(odom):
     global x, y, theta
@@ -19,11 +21,12 @@ def callback1(odom):
 
 def callback2(data):
     global message
-    message = data.data
+    message = data.data.lower()
     # print(message)
     return 0
 
 def go_to(goalx, goaly):
+    global at_kitchen, at_table
     robotAngle = math.asin(theta)
     dy,dx = (goaly - y), (goalx- x)
     slop = dy/dx
@@ -48,6 +51,10 @@ def go_to(goalx, goaly):
             linear_vel = 0.5*linear
         else:
             linear_vel = 0
+            if (goalx, goaly) == (0.09, -3.00):
+                at_kitchen = True
+            if (goalx, goaly) == (3, 3):
+                at_table = True
     return linear_vel, angular_vel
 
 
@@ -63,28 +70,28 @@ def robot():
  
     print("Waiting for the orders!")
     while not rospy.is_shutdown():
-        if message.lower() == 'order':
+        if 'order' in message and not at_kitchen:
             linear_vel, angular_vel = go_to(0.09, -3.00)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        if message.lower() == 'home':
-            linear_vel, angular_vel = go_to(0.5, -5.85)
-            vel.linear.x = linear_vel
-            vel.angular.z = angular_vel
-        if message.lower() == 't1':
+        if 't1' in message and at_kitchen:
             linear_vel, angular_vel = go_to(3, 3)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
-        if message.lower() == 't2':
-            linear_vel, angular_vel = go_to(5.1, 0.48)
-            vel.linear.x = linear_vel
-            vel.angular.z = angular_vel
-        if message.lower() == 't3':
-            linear_vel, angular_vel = go_to(4.95, -5.66)
+        # if message.lower() == 't2':
+        #     linear_vel, angular_vel = go_to(5.1, 0.48)
+        #     vel.linear.x = linear_vel
+        #     vel.angular.z = angular_vel
+        # if message.lower() == 't3':
+        #     linear_vel, angular_vel = go_to(4.95, -5.66)
+        #     vel.linear.x = linear_vel
+        #     vel.angular.z = angular_vel
+        if 'home' in message and at_table:
+            linear_vel, angular_vel = go_to(0.5, -5.85)
             vel.linear.x = linear_vel
             vel.angular.z = angular_vel
 
-        print(round(vel.linear.x, 2), round(vel.angular.z, 2))
+        # print(round(vel.linear.x, 2), round(vel.angular.z, 2))
         pub.publish(vel)
         rate.sleep()
 
